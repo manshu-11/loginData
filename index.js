@@ -1,42 +1,12 @@
 const express = require("express");
-const loginData = require("./db.json");
 const fs = require('fs');
-const { json } = require("stream/consumers");
 const app = express();
 const PORT = 8000;
-//middleware
+
+// Middleware
 app.use(express.json());
-//Routs
 
-app.get('/loginData', (req, res) => {
-	return res.json(loginData);
-});
-
-app.post('/loginData', (req, res) => {
-	const body = req.body;
-	console.log(body);
-
-	// Read existing data
-	fs.readFile('./db.json', 'utf8', (err, data) => {
-		let loginData = [];
-		if (!err && data) {
-			loginData = JSON.parse(data);
-		}
-
-		// Add new login data
-		const newEntry = { ...body, id: loginData.length + 1 };
-		loginData.push(newEntry);
-
-		// Write updated data back to the file
-		fs.writeFile('./db.json', JSON.stringify(loginData, null, 2), (err) => {
-			if (err) {
-				return res.status(500).json({ status: "Error", message: "Failed to write data" });
-			}
-			return res.json({ status: "Success", id: newEntry.id });
-		});
-	});
-});
-
+// Function to read data from db.json
 const getLoginData = () => {
 	try {
 		const data = fs.readFileSync('./db.json', 'utf8');
@@ -47,6 +17,7 @@ const getLoginData = () => {
 	}
 };
 
+// Function to write data to db.json
 const saveLoginData = (data, res, successMessage) => {
 	fs.writeFile('./db.json', JSON.stringify(data, null, 2), (err) => {
 		if (err) {
@@ -56,7 +27,30 @@ const saveLoginData = (data, res, successMessage) => {
 	});
 };
 
+// ✅ GET all data
+app.get('/loginData', (req, res) => {
+	const loginData = getLoginData();
+	return res.json(loginData);
+});
+
+// ✅ POST new data
+app.post('/loginData', (req, res) => {
+	const body = req.body;
+
+	// Get current data from db.json
+	let loginData = getLoginData();
+
+	// Add new data with unique ID
+	const newEntry = { ...body, id: loginData.length + 1 };
+	loginData.push(newEntry);
+
+	// Save to db.json
+	saveLoginData(loginData, res, "User added successfully");
+});
+
+// ✅ CRUD routes
 app.route('/loginData/:id')
+	// Get single user by ID
 	.get((req, res) => {
 		const id = Number(req.params.id);
 		const loginData = getLoginData();
@@ -68,6 +62,7 @@ app.route('/loginData/:id')
 		return res.json(loginInfo);
 	})
 
+	// Update user data by ID
 	.patch((req, res) => {
 		const id = Number(req.params.id);
 		const body = req.body;
@@ -78,12 +73,13 @@ app.route('/loginData/:id')
 			return res.status(404).json({ status: "Error", message: "User not found" });
 		}
 
-		// Update the user data
+		// Update data
 		loginData[userIndex] = { ...loginData[userIndex], ...body };
 
 		saveLoginData(loginData, res, "User updated successfully");
 	})
 
+	// Delete user by ID
 	.delete((req, res) => {
 		const id = Number(req.params.id);
 		let loginData = getLoginData();
@@ -95,4 +91,6 @@ app.route('/loginData/:id')
 
 		saveLoginData(filteredData, res, "User deleted successfully");
 	});
-app.listen(PORT, () => console.log(`Server stated at PORT: ${PORT}`));
+
+// Start Server
+app.listen(PORT, () => console.log(`Server started at PORT: ${PORT}`));
