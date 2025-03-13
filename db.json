@@ -1,0 +1,22 @@
+[
+  {
+    "userID": "uid-1716962940981",
+    "name": "Manav Bonde",
+    "email": "manav@gmail.com",
+    "city": "Pune",
+    "loginID": "man_bonde",
+    "password": "112233",
+    "confirmPassword": "112233",
+    "id": 1
+  },
+  {
+    "userID": "uid-1717350444955",
+    "name": "Ramesh Bonde",
+    "email": "ramesh@gmail.com",
+    "city": "Malkapur",
+    "loginID": "ramesh_bonde",
+    "password": "111222",
+    "confirmPassword": "111222",
+    "id": 3
+  }
+]
